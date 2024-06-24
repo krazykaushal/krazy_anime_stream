@@ -14,6 +14,18 @@ const nextConfig = {
             port: "",
             pathname: "/**",
           },
+          {
+            protocol: "https",
+            hostname: "img.flawlessfiles.com",
+            port: "",
+            pathname: "/**",
+          },
+          {
+            protocol: "https",
+            hostname: "cdn.jsdelivr.net",
+            port: "",
+            pathname: "/**",
+          }
         ],
       },
 };

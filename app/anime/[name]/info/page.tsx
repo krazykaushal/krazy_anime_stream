@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useQuery } from "react-query";
+import { useQuery, useQueries } from "react-query";
 import axios from "axios";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,46 +11,86 @@ import { Card, CardTitle } from "@/components/ui/card";
 import { ArrowBigRight } from "lucide-react";
 import Link from "next/link";
 interface IEpisodeObj {
-  id: string;
-  number: number;
-  title: string;
-  isFiller: boolean;
-  url: string;
-}
-interface IAnimeInfo {
-  id: string;
-  malID: number;
-  alId: number;
-  title: string;
-  image: string;
-  description: string;
-  type: string;
-  url: string;
-  subOrDub: string;
   totalEpisodes: number;
-  episodes: IEpisodeObj[];
-  hasDub: boolean;
-  hasSub: boolean;
+  episodes: {
+    number: number;
+    title: number;
+    episodeId: string;
+    isFiller: boolean;
+  }[];
 }
 
-const getAnimeData = async (id: string): Promise<IAnimeInfo> => {
+interface IAnimeInfo {
+  info: { 
+    id: string; 
+    anilistId: number; 
+    malId: number; 
+    name: string; 
+    poster: string; 
+    description: string; 
+    stats: { 
+      rating: string; 
+      quality: string; 
+      type: string; 
+      duration: string; 
+      episodes: { 
+        sub: number; 
+        dub: number;
+      };
+    };
+  };
+  moreInfo: { 
+    japanese: string; 
+    aired: string; 
+    premiered: string; 
+    duration: string; 
+    status: string; 
+    studios: string; 
+    genres: []; 
+    producers: [];
+  };
+}
+
+interface IAnimeResponse {
+  anime: IAnimeInfo;
+}
+
+
+const getAnimeData = async (id: string): Promise<IAnimeResponse> => {
   const response = await axios.get(
-    `${process.env.NEXT_PUBLIC_ANIME_API}/anime/zoro/info?id=${id}`
+    `${process.env.NEXT_PUBLIC_ANIME_API}/anime/info?id=${id}`
   );
   console.log(response);
   return response.data;
 };
 
+const getAnimeEpisodesData = async (id: string): Promise<IEpisodeObj> => {
+  const response = await axios.get(
+    `${process.env.NEXT_PUBLIC_ANIME_API}/anime/episodes/${id}`
+  );
+  console.log(response);
+  return response.data;
+}
+
 const animeInfo = ({ params }: { params: { name: string } }) => {
   const {
     data: animeInfo,
-    error,
-    isLoading,
+    error: animeInfoError,
+    isLoading: animeInfoLoading,
   } = useQuery({
     queryKey: ["animeInfo", params.name],
     queryFn: () => getAnimeData(params.name),
   });
-  if (isLoading) {
+
+  const {
+    data: animeEpisodes,
+    error: episodesError,
+    isLoading: episodesLoading,
+  } = useQuery(["animeEpisodes", params.name], () => getAnimeEpisodesData(params.name), {
+    enabled: !!animeInfo
+  });
+
+  if (animeInfoLoading || episodesLoading) {
     return (
       <div className="flex flex-col space-y-3 mt-10">
         <Skeleton className="h-96 w-[90%] mx-auto rounded-xl" />
@@ -69,35 +109,34 @@ const animeInfo = ({ params }: { params: { name: string } }) => {
             width={300}
             height={400}
             alt="loading"
-            src={animeInfo!.image}
+            src={animeInfo!.anime.info.poster}
             className="rounded-lg"
           />
         </div>
         <div className="lg:col-span-2">
           <div className="flex gap-2">
-            <Badge className="border-amber-300">{animeInfo?.type}</Badge>
+            <Badge className="border-amber-300">{animeInfo?.anime.info.stats.type}</Badge>
             <Badge variant="outline" className="border-cyan-500">
-              Episodes : {animeInfo?.totalEpisodes}
+              Episodes : {animeInfo?.anime.info.stats.episodes.sub}
             </Badge>
-            {animeInfo?.hasDub && (
-              <Badge>{animeInfo?.hasDub ? "Dub" : ""}</Badge>
+            {(animeInfo?.anime.info.stats.episodes.dub ?? 0) > 0 && (
+              <Badge>{animeInfo?.anime.info.stats.episodes.dub ? "Dub" : ""}</Badge>
             )}
-            {animeInfo?.hasSub && (
-              <Badge>{animeInfo?.hasSub ? "Sub" : ""}</Badge>
-            )}
+            {(animeInfo?.anime.info.stats.episodes.sub ?? 0) > 0 && (
+              <Badge>{animeInfo?.anime.info.stats.episodes.sub ? "Sub" : ""}</Badge>)}
           </div>
-          <h2 className="text-3xl font-semibold py-4">{animeInfo?.title}</h2>
+          <h2 className="text-3xl font-semibold py-4">{animeInfo?.anime.info.name}</h2>
           <p className="text-gray-500">
             <span className="font-semibold text-white">Description:</span>{" "}
-            {animeInfo?.description}
+            {animeInfo?.anime.info.description}
           </p>
         </div>
       </div>
       <div className="grid lg:grid-cols-3 sm:grid-cols-2 place-self-auto gap-4 w-[90%] mx-auto mt-10">
-        {animeInfo?.episodes.map((item, index) => (
+        {animeEpisodes?.episodes.map((item, index) => (
           <Link
             key={index}
-            href={{ pathname: `/watch/${item.id}` }}
+            href={{ pathname: `/watch/${item.episodeId}` }}
             className="self-stretch "
           >
             <Card className="p-2 flex gap-2 items-center w-full h-full hover:shadow-white hover:cursor-pointer">

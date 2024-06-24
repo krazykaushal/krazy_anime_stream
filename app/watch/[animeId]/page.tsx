@@ -7,24 +7,27 @@ import ReactPlayer from "react-player";
 
 interface ISourceStream {
   url: string;
-  isM3U8: boolean;
   type: string;
 }
 interface ISubtitleArray {
-  url: string;
-  lang: string;
+  file: string;
+  label: string;
+  kind: string;
+  default: boolean;
 }
 
 interface IStream {
+  anilistID: number;
+  malID: number;
   sources: ISourceStream[];
-  subtitles: ISubtitleArray[];
+  tracks: ISubtitleArray[];
   intro: { start: number; end: number };
   outro: { start: number; end: number };
 }
 
 const getStreamingInfo = async (id: string): Promise<IStream> => {
   const response = await axios.get(
-    `${process.env.NEXT_PUBLIC_ANIME_API}/anime/zoro/watch?episodeId=${id}&server=vidstreaming`
+    `${process.env.NEXT_PUBLIC_ANIME_API}/anime/episode-srcs?id=${id}`
   );
   console.log(response);
   return response.data;
@@ -66,13 +69,15 @@ const watchAnime = ({ params }: { params: { animeId: string } }) => {
               attributes: {
                 crossOrigin: "anonymous",
               },
-              tracks: streamData?.subtitles.map((sub) => ({
-                kind: "subtitles",
-                label: sub.lang,
-                src: sub.url,
-                srcLang: sub.lang,
-                default: sub.lang === "English",
-              })),
+              tracks: streamData?.tracks
+                .filter((sub) => sub.kind === "captions")
+                .map((sub, index) => ({
+                  kind: "subtitles",
+                  label: sub.label,
+                  src: sub.file,
+                  srcLang: sub.label,
+                  default: sub.default,
+                })),
             },
           }}
         />

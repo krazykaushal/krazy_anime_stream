@@ -22,14 +22,13 @@ import CustomPagination from "@/components/custom/CustomPagination";
 import { useSearchParams } from "next/navigation";
 
 interface IAnimeList {
-  dub: number;
   duration: string;
-  episodes: number;
+  episodes: {sub: number, dub: number};
   id: string;
-  image: string;
+  name: string;
+  poster: string;
   japaneseTitle: string;
-  nsfw: boolean;
-  sub: number;
+  rating: string;
   title: string;
   type: string;
   url: string;
@@ -38,7 +37,7 @@ interface IAnimeList {
 interface IAnimeSearchResult {
   currentPage: number;
   hasNextPage: boolean;
-  results: IAnimeList[];
+  animes: IAnimeList[];
   totalPages: number;
 }
 
@@ -47,7 +46,7 @@ const getAnimeData = async (
   page: number = 1
 ): Promise<IAnimeSearchResult> => {
   const response = await axios.get(
-    `${process.env.NEXT_PUBLIC_ANIME_API}/anime/zoro/${name}?page=${page}`
+    `${process.env.NEXT_PUBLIC_ANIME_API}/anime/search?q=${name}&page=${page}`
   );
   return response.data;
 };
@@ -96,25 +95,25 @@ const AnimePage = ({
       </h3>
 
       <div className="flex gap-4 flex-wrap justify-center mt-4">
-        {animeCards?.results?.map((item: IAnimeList, index: number) => (
+        {animeCards?.animes?.map((item: IAnimeList, index: number) => (
           <Card className="w-96 hover:shadow-white duration-300" key={index}>
             <CardHeader className="relative">
               <span className="absolute mt-3 ml-2">
-                {item.nsfw && (
+                {item.rating && (
                   <Badge variant="destructive" className="bg-red-500 text-sm">
-                    18+
+                    {item.rating}
                   </Badge>
                 )}
               </span>
               <Image
-                src={item.image}
+                src={item.poster}
                 width="0"
                 height="0"
                 alt={item.id}
                 sizes="100vw"
                 style={{ width: "auto", height: "500px" }}
               />
-              <CardTitle>{item.title}</CardTitle>
+              <CardTitle>{item.name}</CardTitle>
             </CardHeader>
             <CardContent className="flex gap-2">
               <Badge variant="outline" className="border-purple-700">
@@ -123,21 +122,21 @@ const AnimePage = ({
               {/* {item.episodes > 0 && (
                 <Badge variant="secondary">Episodes : {item.episodes}</Badge>
               )} */}
-              {item.dub > 0 && (
+              {item.episodes.dub > 0 && (
                 <Badge variant="outline" className="border-cyan-500">
-                  Dub : {item.dub}
+                  Dub : {item.episodes.dub}
                 </Badge>
               )}
-              {item.sub > 0 && (
+              {item.episodes.sub > 0 && (
                 <Badge variant="outline" className="border-green-600">
-                  Sub : {item.sub}
+                  Sub : {item.episodes.sub}
                 </Badge>
               )}
             </CardContent>
             <CardFooter className="flex gap-3">
-              <Link href={item.url} target="blank">
+              {/* <Link href={item.url} target="blank">
                 <Button>HiAnimeLink</Button>
-              </Link>
+              </Link> */}
               <Link href={{ pathname: `${item.id}/info` }}>
                 <Button>Info</Button>
               </Link>
