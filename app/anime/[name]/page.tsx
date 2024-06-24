@@ -91,7 +91,7 @@ const AnimePage = ({
   return (
     <div className="max-w-500">
       <h3 className="text-center text-4xl font-semibold mt-4">
-        Anime Result for Search Query : "{params.name}"
+        Anime Result for Search Query : {params.name.replace("%20", " ")}
       </h3>
 
       <div className="flex gap-4 flex-wrap justify-center mt-4">

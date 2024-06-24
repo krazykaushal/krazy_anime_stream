@@ -72,7 +72,7 @@ const getAnimeEpisodesData = async (id: string): Promise<IEpisodeObj> => {
   return response.data;
 }
 
-const animeInfo = ({ params }: { params: { name: string } }) => {
+const AnimeInfo = ({ params }: { params: { name: string } }) => {
   const {
     data: animeInfo,
     error: animeInfoError,
@@ -153,4 +153,4 @@ const animeInfo = ({ params }: { params: { name: string } }) => {
   );
 };
 
-export default animeInfo;
+export default AnimeInfo;

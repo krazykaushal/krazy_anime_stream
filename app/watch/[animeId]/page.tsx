@@ -33,7 +33,7 @@ const getStreamingInfo = async (id: string): Promise<IStream> => {
   return response.data;
 };
 
-const watchAnime = ({ params }: { params: { animeId: string } }) => {
+const WatchAnime = ({ params }: { params: { animeId: string } }) => {
   const {
     data: streamData,
     isLoading,
@@ -86,4 +86,4 @@ const watchAnime = ({ params }: { params: { animeId: string } }) => {
   );
 };
 
-export default watchAnime;
+export default WatchAnime;
