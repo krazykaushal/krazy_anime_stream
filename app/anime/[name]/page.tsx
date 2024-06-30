@@ -23,7 +23,7 @@ import { useSearchParams } from "next/navigation";
 
 interface IAnimeList {
   duration: string;
-  episodes: {sub: number, dub: number};
+  episodes: { sub: number; dub: number };
   id: string;
   name: string;
   poster: string;
@@ -95,6 +95,11 @@ const AnimePage = ({
       </h3>
 
       <div className="flex gap-4 flex-wrap justify-center mt-4">
+        {animeCards?.animes?.length === 0 && (
+          <div className="text-center text-2xl font-semibold mt-4">
+            No Anime Found. Check the spelling or try another search query.
+          </div>
+        )}
         {animeCards?.animes?.map((item: IAnimeList, index: number) => (
           <Card className="w-96 hover:shadow-white duration-300" key={index}>
             <CardHeader className="relative">
