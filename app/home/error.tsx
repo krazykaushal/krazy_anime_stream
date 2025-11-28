@@ -25,7 +25,7 @@ export default function HomeError({
           Failed to Load Anime Data
         </h2>
         <p className="text-gray-600 dark:text-gray-400">
-          We're having trouble connecting to our anime database. This could be due
+          We&apos;re having trouble connecting to our anime database. This could be due
           to network issues or server maintenance.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">

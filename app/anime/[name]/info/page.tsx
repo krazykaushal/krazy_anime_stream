@@ -60,7 +60,10 @@ const AnimeInfo = ({ params }: { params: { name: string } }) => {
   const mostPopularAnimes = animeInfo?.data.mostPopularAnimes || [];
   const relatedAnimes = animeInfo?.data.relatedAnimes || [];
   const recommendedAnimes = animeInfo?.data.recommendedAnimes || [];
-  const episodes = animeEpisodes?.data.episodes || [];
+  const episodes = useMemo(
+    () => animeEpisodes?.data.episodes ?? [],
+    [animeEpisodes?.data?.episodes]
+  );
 
   // Calculate pagination - MUST be called before any conditional returns
   const totalEpisodePages = Math.ceil(episodes.length / episodesPerPage);

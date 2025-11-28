@@ -26,8 +26,8 @@ export default function Error({
           Oops! Something went wrong
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          We encountered an unexpected error. Don't worry, this has been logged
-          and we'll look into it.
+          We encountered an unexpected error. Don&apos;t worry, this has been logged
+          and we&apos;ll look into it.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button
