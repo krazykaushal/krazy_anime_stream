@@ -29,11 +29,32 @@ import { Suspense } from "react";
 import HomeCarousels from "./homeCarousel";
 
 const getHomeData = async (): Promise<IAnimeHomeInfo> => {
-  const response = await axios.get(
-    `${process.env.NEXT_PUBLIC_ANIME_API}/anime/home`
-  );
-  console.log(response);
-  return response.data;
+  try {
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_ANIME_API}/api/v2/hianime/home`,
+      {
+        timeout: 10000, // 10 second timeout
+      }
+    );
+    console.log(response);
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        // Server responded with error status
+        throw new Error(
+          `Server error: ${error.response.status} - ${error.response.statusText}`
+        );
+      } else if (error.request) {
+        // Request made but no response
+        throw new Error(
+          "Unable to reach anime server. Please check your internet connection."
+        );
+      }
+    }
+    // Unknown error
+    throw new Error("Failed to fetch anime data. Please try again later.");
+  }
 };
 
 export default function Home() {
@@ -47,7 +68,12 @@ export default function Home() {
     data: homeData,
     isLoading,
     error,
-  } = useQuery("homeData", getHomeData);
+    refetch,
+  } = useQuery("homeData", getHomeData, {
+    retry: 2,
+    retryDelay: 1000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   if (isLoading) {
     return (
@@ -56,6 +82,49 @@ export default function Home() {
         <div className="space-y-2">
           <Skeleton className="h-4 w-[85%] mx-auto" />
           <Skeleton className="h-4 w-[75%] mx-auto" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] p-4">
+        <div className="max-w-lg w-full space-y-6 text-center">
+          <div className="flex justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-16 w-16 text-amber-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold">Failed to Load Anime Data</h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            {error instanceof Error
+              ? error.message
+              : "We're having trouble loading the content. Please try again."}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button onClick={() => refetch()} className="w-full sm:w-auto">
+              Retry
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => window.location.reload()}
+              className="w-full sm:w-auto"
+            >
+              Refresh Page
+            </Button>
+          </div>
         </div>
       </div>
     );

@@ -4,11 +4,14 @@ export interface IAnimeHomeInfo {
   trendingAnimes: trendingAnime[];
   latestEpisodeAnimes: latestEpisodeAnime[];
   topUpcomingAnimes: topUpcomingAnime[];
-  top10Animes: top10Anime[];
+  top10Animes: top10Anime;
   topAiringAnimes: topAiringAnime[];
+  mostPopularAnimes: mostPopularAnime[];
+  mostFavoriteAnimes: mostFavoriteAnime[];
+  latestCompletedAnimes: latestCompletedAnime[];
 }
 
-export type listAnimeType = 'spotlight'  | 'trending' | 'latestEpisode' | 'topUpcoming' | 'top10' | 'topAiring' 
+export type listAnimeType = 'spotlight'  | 'trending' | 'latestEpisode' | 'topUpcoming' | 'top10Today' | 'top10Week' | 'top10Month' | 'topAiring' | 'mostPopular' | 'mostFavorite' | 'latestCompleted'
 
 export interface spotlightAnime {
   rank: number;
@@ -17,43 +20,48 @@ export interface spotlightAnime {
   description: string;
   poster: string;
   jname: string;
-  episodes: { sub: number; dub: number };
-  otherinfo: string[];
+  episodes: { sub: number | null; dub: number | null };
+  type: string;
+  otherInfo: string[];
 }
 
 export interface trendingAnime {
   rank: number;
   id: string;
   name: string;
+  jname: string;
   poster: string;
 }
 
 export interface latestEpisodeAnime {
   id: string;
   name: string;
+  jname: string;
   poster: string;
   duration: string;
   type: string;
-  rating: string;
-  episodes: { sub: number; dub: number };
+  rating: string | null;
+  episodes: { sub: number | null; dub: number | null };
 }
 
 export interface topUpcomingAnime {
   id: string;
   name: string;
+  jname: string;
   poster: string;
   duration: string;
   type: string;
-  rating: string;
-  episodes: { sub: number; dub: number };
+  rating: string | null;
+  episodes: { sub: number | null; dub: number | null };
 }
 
 export interface IgeneralAnimeInfo {
   id: string;
   rank: number;
   name: string;
+  jname: string;
   poster: string;
-  episodes: { sub: number; dub: number };
+  episodes: { sub: number | null; dub: number | null };
 }
 
 export interface top10Anime {
@@ -67,7 +75,35 @@ export interface topAiringAnime {
   name: string;
   jname: string;
   poster: string;
-  otherinfo: string[];
+  episodes: { sub: number | null; dub: number | null };
+  type: string;
+}
+
+export interface mostPopularAnime {
+  id: string;
+  name: string;
+  jname: string;
+  poster: string;
+  episodes: { sub: number | null; dub: number | null };
+  type: string;
+}
+
+export interface mostFavoriteAnime {
+  id: string;
+  name: string;
+  jname: string;
+  poster: string;
+  episodes: { sub: number | null; dub: number | null };
+  type: string;
+}
+
+export interface latestCompletedAnime {
+  id: string;
+  name: string;
+  jname: string;
+  poster: string;
+  episodes: { sub: number | null; dub: number | null };
+  type: string;
 }
 
 

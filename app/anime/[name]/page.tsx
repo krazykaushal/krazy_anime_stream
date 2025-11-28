@@ -11,42 +11,20 @@ import {
 } from "@/components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
-import { any } from "zod";
+import React from "react";
 import { useQuery } from "react-query";
 import axios from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-
 import CustomPagination from "@/components/custom/CustomPagination";
-import { useSearchParams } from "next/navigation";
-
-interface IAnimeList {
-  duration: string;
-  episodes: { sub: number; dub: number };
-  id: string;
-  name: string;
-  poster: string;
-  japaneseTitle: string;
-  rating: string;
-  title: string;
-  type: string;
-  url: string;
-}
-
-interface IAnimeSearchResult {
-  currentPage: number;
-  hasNextPage: boolean;
-  animes: IAnimeList[];
-  totalPages: number;
-}
+import { IAnimeSearchResult, IAnimeSearchItem } from "@/lib/types/search";
 
 const getAnimeData = async (
   name: string,
   page: number = 1
 ): Promise<IAnimeSearchResult> => {
   const response = await axios.get(
-    `${process.env.NEXT_PUBLIC_ANIME_API}/anime/search?q=${name}&page=${page}`
+    `${process.env.NEXT_PUBLIC_ANIME_API}/api/v2/hianime/search?q=${name}&page=${page}`
   );
   return response.data;
 };
@@ -85,9 +63,17 @@ const AnimePage = ({
   }
 
   if (error) {
-    return <div> Locha hua hai, sudharo usko thoda </div>;
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="text-center text-2xl font-semibold">
+          An error occurred while searching. Please try again.
+        </div>
+      </div>
+    );
   }
+
   console.log(animeCards);
+
   return (
     <div className="max-w-500">
       <h3 className="text-center text-4xl font-semibold mt-4">
@@ -95,15 +81,15 @@ const AnimePage = ({
       </h3>
 
       <div className="flex gap-4 flex-wrap justify-center mt-4">
-        {animeCards?.animes?.length === 0 && (
+        {animeCards?.data?.animes?.length === 0 && (
           <div className="text-center text-2xl font-semibold mt-4">
             No Anime Found. Check the spelling or try another search query.
           </div>
         )}
-        {animeCards?.animes?.map((item: IAnimeList, index: number) => (
+        {animeCards?.data?.animes?.map((item: IAnimeSearchItem, index: number) => (
           <Card className="w-96 hover:shadow-white duration-300" key={index}>
             <CardHeader className="relative">
-              <span className="absolute mt-3 ml-2">
+              <span className="absolute mt-3 ml-2 z-10">
                 {item.rating && (
                   <Badge variant="destructive" className="bg-red-500 text-sm">
                     {item.rating}
@@ -119,39 +105,97 @@ const AnimePage = ({
                 style={{ width: "auto", height: "500px" }}
               />
               <CardTitle>{item.name}</CardTitle>
+              <CardDescription className="text-xs text-gray-400">
+                {item.jname}
+              </CardDescription>
             </CardHeader>
-            <CardContent className="flex gap-2">
+            <CardContent className="flex gap-2 flex-wrap">
               <Badge variant="outline" className="border-purple-700">
                 {item.type}
               </Badge>
-              {/* {item.episodes > 0 && (
-                <Badge variant="secondary">Episodes : {item.episodes}</Badge>
-              )} */}
-              {item.episodes.dub > 0 && (
-                <Badge variant="outline" className="border-cyan-500">
-                  Dub : {item.episodes.dub}
+              {item.duration && (
+                <Badge variant="outline" className="border-orange-500">
+                  {item.duration}
                 </Badge>
               )}
-              {item.episodes.sub > 0 && (
+              {item.episodes.sub && item.episodes.sub > 0 && (
                 <Badge variant="outline" className="border-green-600">
-                  Sub : {item.episodes.sub}
+                  Sub: {item.episodes.sub}
+                </Badge>
+              )}
+              {item.episodes.dub && item.episodes.dub > 0 && (
+                <Badge variant="outline" className="border-cyan-500">
+                  Dub: {item.episodes.dub}
                 </Badge>
               )}
             </CardContent>
             <CardFooter className="flex gap-3">
-              {/* <Link href={item.url} target="blank">
-                <Button>HiAnimeLink</Button>
-              </Link> */}
               <Link href={{ pathname: `${item.id}/info` }}>
-                <Button>Info</Button>
+                <Button>View Info</Button>
               </Link>
             </CardFooter>
           </Card>
         ))}
       </div>
-      {animeCards!.totalPages > 1 && (
+
+      {animeCards?.data?.mostPopularAnimes && animeCards.data.mostPopularAnimes.length > 0 && (
+        <div className="mt-12 mb-8">
+          <h3 className="text-3xl font-semibold text-left ml-5 p-3 text-amber-400">
+            Most Popular Animes
+          </h3>
+          <div className="flex gap-4 flex-wrap justify-center mt-4">
+            {animeCards.data.mostPopularAnimes.map((item: IAnimeSearchItem, index: number) => (
+              <Card className="w-96 hover:shadow-white duration-300" key={index}>
+                <CardHeader className="relative">
+                  <span className="absolute mt-3 ml-2 z-10">
+                    {item.rating && (
+                      <Badge variant="destructive" className="bg-red-500 text-sm">
+                        {item.rating}
+                      </Badge>
+                    )}
+                  </span>
+                  <Image
+                    src={item.poster}
+                    width="0"
+                    height="0"
+                    alt={item.id}
+                    sizes="100vw"
+                    style={{ width: "auto", height: "500px" }}
+                  />
+                  <CardTitle>{item.name}</CardTitle>
+                  <CardDescription className="text-xs text-gray-400">
+                    {item.jname}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex gap-2 flex-wrap">
+                  <Badge variant="outline" className="border-pink-500">
+                    {item.type}
+                  </Badge>
+                  {item.episodes.sub && item.episodes.sub > 0 && (
+                    <Badge variant="outline" className="border-green-600">
+                      Sub: {item.episodes.sub}
+                    </Badge>
+                  )}
+                  {item.episodes.dub && item.episodes.dub > 0 && (
+                    <Badge variant="outline" className="border-cyan-500">
+                      Dub: {item.episodes.dub}
+                    </Badge>
+                  )}
+                </CardContent>
+                <CardFooter className="flex gap-3">
+                  <Link href={{ pathname: `/anime/${item.id}/info` }}>
+                    <Button>View Info</Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {animeCards?.data?.totalPages && animeCards.data.totalPages > 1 && (
         <CustomPagination
-          totalPages={animeCards!.totalPages}
+          totalPages={animeCards.data.totalPages}
           pageNumber={searchParams.page || 1}
         />
       )}
